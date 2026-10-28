@@ -1,0 +1,95 @@
+env:
+  APP_ID: app.relayfast     # applicationId — поменяйте на свой
+  APP_NAME: RelayFastVPN
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /usr/share/swift "$AGENT_TOOLSDIRECTORY/CodeQL" || true
+          sudo docker image prune -af || true
+          df -h /
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r28
+          local-cache: true
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Bootstrap Android project
+        run: bash tools/bootstrap.sh
+
+      - name: Build Xray core (libv2ray.aar)
+        run: |
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          bash tools/build_xray_core.sh
+
+      - name: Fetch geo files
+        run: bash tools/fetch_geo.sh
+
+      - name: Test
+        run: |
+          flutter pub get
+          flutter test
+
+      - name: Build APK
+        run: flutter build apk --release --split-per-abi --build-number=${{ github.run_number }} --dart-define=UPDATE_REPO=${{ github.repository }} --dart-define=BILLING_URL=${{ secrets.BILLING_URL }}
+
+      - name: Sign APK (если заданы секреты)
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then echo "::warning::нет keystore — APK подписан временным debug-ключом, обновление поверх старой версии не получится"; exit 0; fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          for f in build/app/outputs/flutter-apk/*-release.apk; do
+            "$APKSIGNER" sign --ks "$RUNNER_TEMP/release.jks" --ks-key-alias "$KEY_ALIAS" \
+              --ks-pass env:KEYSTORE_PASS "$f"
+          done
+
+      - name: Rename APK
+        run: |
+          mkdir -p dist
+          for f in build/app/outputs/flutter-apk/app-*-release.apk; do
+            abi=$(basename "$f" -release.apk)
+            abi=${abi#app-}
+            cp "$f" "dist/RelayFastVPN-$abi.apk"
+          done
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RelayFastVPN
+          path: dist/*.apk
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "build-${{ github.run_number }}" \
+            dist/*.apk \
+            --title "RelayFastVPN build ${{ github.run_number }}" \
+            --notes "Автосборка из ${{ github.sha }}" \
+            --target "${{ github.sha }}"
