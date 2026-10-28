@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RelayFastVPN — открыть подписку</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:#070B1F; color:#e8ecff; font:16px/1.5 system-ui,sans-serif; }
+  main { width:min(92vw,420px); text-align:center; padding:24px; }
+  h1 { font-size:22px; margin:0 0 8px; }
+  p { color:#9aa4d6; margin:8px 0 20px; }
+  a.btn, button { display:block; width:100%; box-sizing:border-box; padding:14px; margin:10px 0;
+         border-radius:14px; border:1px solid #35C8FF55; background:#111735; color:#e8ecff;
+         font:inherit; text-decoration:none; cursor:pointer; }
+  a.primary { background:#35C8FF; color:#070B1F; border:0; font-weight:600; }
+  small { color:#6f79a8; word-break:break-all; display:block; margin-top:14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>RelayFastVPN</h1>
+  <p id="msg">Открываем приложение…</p>
+  <a id="open" class="btn primary" href="#">Открыть в приложении</a>
+  <!-- Замените ссылку на свою страницу загрузки приложения -->
+  <a class="btn" href="https://github.com/YOUR_NAME/YOUR_REPO/releases/latest">Скачать приложение</a>
+  <button id="copy" type="button">Скопировать ссылку подписки</button>
+  <small id="sub"></small>
+</main>
+<script>
+  // Ссылка вида: https://ваш-домен/open.html?url=https%3A%2F%2Fsub.example.com%2Fsub%2FTOKEN
+  var sub = new URLSearchParams(location.search).get('url');
+  var open = document.getElementById('open');
+  if (!sub) {
+    document.getElementById('msg').textContent = 'В ссылке нет адреса подписки.';
+    open.style.display = 'none';
+    document.getElementById('copy').style.display = 'none';
+  } else {
+    var deep = 'relayfast://import?url=' + encodeURIComponent(sub);
+    open.href = deep;
+    document.getElementById('sub').textContent = sub;
+    document.getElementById('msg').textContent =
+      'Если приложение не открылось, установите его и нажмите «Открыть» ещё раз.';
+    setTimeout(function () { location.href = deep; }, 400);
+    document.getElementById('copy').onclick = function () {
+      navigator.clipboard.writeText(sub).then(function () {
+        document.getElementById('copy').textContent = 'Скопировано';
+      });
+    };
+  }
+</script>
+</body>
+</html>
