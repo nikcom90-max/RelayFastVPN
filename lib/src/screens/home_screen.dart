@@ -489,21 +489,46 @@ class _ServerTile extends StatelessWidget {
 
   static final _emojiFlag = RegExp('[\u{1F1E6}-\u{1F1FF}]{2}', unicode: true);
 
-  /// Название с флагом рядом: если эмодзи-флаг уже есть в названии, оставляем
-  /// как есть, иначе подставляем флаг по коду страны (FI, NL…) в начале имени.
-  /// Названия вида «[BR] …» (метка бренда) флагом не дополняются.
-  static String _title(String name, {bool balancer = false}) {
+  /// Делит название на код страны и текст. Флаг рисуется картинкой из
+  /// assets/flags (эмодзи-флаги Windows не умеет показывать — там вместо них
+  /// видны буквы «FI», «NL»). Код берётся из эмодзи-флага в названии (его
+  /// отдаёт Ремна) или из двухбуквенного префикса «FI …». Названия вида
+  /// «[BR] …» (метка бренда) флагом не дополняются.
+  static ({String? code, String text}) _split(String name, {bool balancer = false}) {
     final n = name.trim();
-    if (_emojiFlag.hasMatch(n)) return n;
-    final m = RegExp(r'^[#_ ]*([A-Za-z]{2})(?![A-Za-z])').firstMatch(n);
+    final m = _emojiFlag.firstMatch(n);
     if (m != null) {
-      var code = m.group(1)!.toUpperCase();
-      code = const {'SW': 'SE', 'UK': 'GB'}[code] ?? code;
-      final flag = String.fromCharCodes(code.codeUnits.map((u) => 0x1F1E6 + u - 65));
-      return '$flag $n';
+      final code = String.fromCharCodes(
+          m.group(0)!.runes.map((r) => 0x41 + r - 0x1F1E6));
+      final rest =
+          n.replaceAll(_emojiFlag, '').replaceAll(RegExp(r'\s{2,}'), ' ').trim();
+      return (code: code, text: rest.isEmpty ? n : rest);
     }
-    return balancer ? '⚡ $n' : n;
+    final p = RegExp(r'^[#_ ]*([A-Za-z]{2})(?![A-Za-z])').firstMatch(n);
+    if (p != null) {
+      final raw = p.group(1)!;
+      if (raw == raw.toUpperCase()) {
+        final code = const {'SW': 'SE', 'UK': 'GB'}[raw] ?? raw;
+        return (code: code, text: n);
+      }
+    }
+    return (code: null, text: balancer ? '⚡ $n' : n);
   }
+
+  static Widget _flag(String code) => Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: Image.asset(
+            'assets/flags/${code.toLowerCase()}.png',
+            width: 26,
+            height: 19,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.medium,
+            errorBuilder: (_, __, ___) => const SizedBox(width: 26, height: 19),
+          ),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -513,6 +538,7 @@ class _ServerTile extends StatelessWidget {
         (!c.settings.autoServer || c.connected);
     final ms = c.delays[server.name];
     final tags = server.tags;
+    final parts = _split(server.name, balancer: server.isBalancer);
 
     Widget ping;
     if (c.testing.contains(server.name)) {
@@ -553,9 +579,10 @@ class _ServerTile extends StatelessWidget {
                 width: sel ? 1.5 : 1),
           ),
           child: Row(children: [
+            if (parts.code != null) _flag(parts.code!),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(_title(server.name, balancer: server.isBalancer),
+                Text(parts.text,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w500)),
