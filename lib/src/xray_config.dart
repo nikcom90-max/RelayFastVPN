@@ -390,7 +390,9 @@ class XrayConfigBuilder {
               // Приложения, ходящие по голым IP (Telegram), sniffing не затрагивает.
               'sniffing': {
                 'enabled': true,
-                'destOverride': ['http', 'tls'],
+                // quic: российские приложения часто ходят по QUIC (UDP 443); без
+                // разбора домена их трафик не попадал под правила direct и шёл в прокси.
+                'destOverride': ['http', 'tls', 'quic'],
                 'routeOnly': false,
               },
             }

@@ -16,7 +16,7 @@ String desktopConfig(
   final cfg = jsonDecode(json) as Map<String, dynamic>;
   final sniffing = {
     'enabled': true,
-    'destOverride': ['http', 'tls'],
+    'destOverride': ['http', 'tls', 'quic'],
     // Без routeOnly: домен из TLS/HTTP уходит на сервер и резолвится там
     // (обход подмены DNS провайдером, как на Android).
     'routeOnly': false,
