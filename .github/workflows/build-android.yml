@@ -97,6 +97,29 @@ jobs:
         run: |
           gh release create "build-${{ github.run_number }}" \
             dist/*.apk \
-            --title "RelayFastVPN build ${{ github.run_number }}" \
-            --notes "Автосборка из ${{ github.sha }}" \
-            --target "${{ github.sha }}"
+            --title "Служебная сборка Android ${{ github.run_number }} (для автообновления)" \
+            --notes "Служебный релиз: из него приложение само обновляется. Чтобы скачать RelayFastVPN впервые, откройте релиз «⬇ Скачать RelayFastVPN для Android». Сборка из ${{ github.sha }}." \
+            --target "${{ github.sha }}" \
+            --latest=false
+
+      - name: Publish stable download release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Постоянные адреса: .../releases/download/latest-android/RelayFastVPN-arm64-v8a.apk
+          gh release delete latest-android --cleanup-tag -y || true
+          gh release create latest-android \
+            dist/*.apk \
+            --title "⬇ Скачать RelayFastVPN для Android" \
+            --notes "Последняя версия (сборка ${{ github.run_number }}). Для большинства телефонов скачайте **RelayFastVPN-arm64-v8a.apk**; для очень старых (до 2017 года) — RelayFastVPN-armeabi-v7a.apk. После скачивания откройте файл и разрешите установку из этого источника." \
+            --target "${{ github.sha }}" \
+            --latest=false
+
+      - name: Clean up old releases (оставляем 5 последних)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release list --limit 200 --json tagName -q '.[].tagName' \
+            | grep -E '^build-[0-9]+$' | sort -t- -k2 -nr | tail -n +6 \
+            | xargs -r -n1 gh release delete --cleanup-tag -y || true
+

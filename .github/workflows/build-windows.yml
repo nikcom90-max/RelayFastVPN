@@ -75,6 +75,30 @@ jobs:
         run: |
           gh release create "windows-${{ github.run_number }}" \
             dist/RelayFastVPN-Setup.exe dist/RelayFastVPN-windows-portable.zip \
-            --title "RelayFastVPN для Windows, сборка ${{ github.run_number }}" \
-            --notes "Автосборка из ${{ github.sha }}" \
-            --target "${{ github.sha }}"
+            --title "Служебная сборка Windows ${{ github.run_number }} (для автообновления)" \
+            --notes "Служебный релиз: из него приложение само обновляется. Чтобы скачать RelayFastVPN впервые, откройте релиз «⬇ Скачать RelayFastVPN для Windows». Сборка из ${{ github.sha }}." \
+            --target "${{ github.sha }}" \
+            --latest=false
+
+      - name: Publish stable download release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Постоянный адрес для пользователей: .../releases/download/latest-windows/RelayFastVPN-Setup.exe
+          gh release delete latest-windows --cleanup-tag -y || true
+          gh release create latest-windows \
+            dist/RelayFastVPN-Setup.exe dist/RelayFastVPN-windows-portable.zip \
+            --title "⬇ Скачать RelayFastVPN для Windows" \
+            --notes "Последняя версия (сборка ${{ github.run_number }}). Скачайте **RelayFastVPN-Setup.exe**, запустите и следуйте мастеру установки. Без установки: RelayFastVPN-windows-portable.zip." \
+            --target "${{ github.sha }}" \
+            --latest=false
+
+      - name: Clean up old releases (оставляем 5 последних)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release list --limit 200 --json tagName -q '.[].tagName' \
+            | grep -E '^windows-[0-9]+$' | sort -t- -k2 -nr | tail -n +6 \
+            | xargs -r -n1 gh release delete --cleanup-tag -y || true
+
