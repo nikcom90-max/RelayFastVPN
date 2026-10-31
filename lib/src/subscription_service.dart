@@ -33,15 +33,14 @@ class SubscriptionService {
   SubscriptionService({http.Client? client}) : _client = client ?? http.Client();
   final http.Client _client;
 
-  /// Варианты User-Agent. Панель выбирает формат подписки по UA: для нашего
-  /// собственного она отдаёт обычный список ссылок, а для Happ — JSON-конфиги
-  /// Xray с балансировщиками и вашей маршрутизацией. Поэтому, если свой UA
-  /// получил не JSON, пробуем совместимый. Лучше настроить в панели правило
-  /// «UA начинается с RelayFastVPN → Xray JSON», тогда второй запрос не нужен.
-  static const variants = ['', 'compat'];
+  /// User-Agent всегда свой: «RelayFastVPN/<версия> (<платформа>)», версия растёт
+  /// с каждым выпуском. Чтобы панель отдавала JSON-конфиги Xray (балансировщики и
+  /// ваша маршрутизация), добавьте в Remnawave правило ответа для UA, который
+  /// начинается с «RelayFastVPN», формат — Xray JSON. Иначе придёт обычный список ссылок.
+  static const variants = [''];
 
   static String _userAgent(String variant, String appVersion) =>
-      variant == 'compat' ? 'Happ/3.0.0' : 'RelayFastVPN/$appVersion';
+      'RelayFastVPN/$appVersion (${Platform.isWindows ? 'Windows' : 'Android'})';
 
   static bool _isJson(String body) {
     final t = body.trimLeft();
@@ -59,10 +58,8 @@ class SubscriptionService {
     if (url.scheme != 'https' && url.scheme != 'http') {
       throw SubscriptionException('Ссылка должна начинаться с https://');
     }
-    final order = [
-      if (preferred != null) preferred,
-      ...variants.where((v) => v != preferred),
-    ];
+    // Раньше был запасной «совместимый» UA от другого клиента; теперь всегда свой.
+    final order = variants;
     SubscriptionException? firstError;
     SubscriptionResult? fallback;
     for (final v in order) {

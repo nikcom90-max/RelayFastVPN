@@ -177,6 +177,16 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
 
   // --- жизненный цикл ------------------------------------------------------
 
+  /// Версия для User-Agent: «1.0.<номер сборки>», растёт с каждым релизом.
+  String get uaVersion {
+    final p = appVersion.split('.');
+    final head = p.length >= 2 ? '${p[0]}.${p[1]}' : appVersion;
+    return '$head.$build';
+  }
+
+  String get uaString =>
+      'RelayFastVPN/$uaVersion (${Platform.isWindows ? 'Windows' : 'Android'})';
+
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     try {
@@ -343,7 +353,7 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
         : raw.isEmpty
             ? 'пусто'
             : 'список ссылок';
-    final ua = sub.variant == 'compat' ? 'совместимый UA' : 'свой UA';
+    final ua = 'UA $uaString';
     final bal = servers.where((s) => s.isBalancer).length;
     final when = _lastRefresh == null
         ? 'ещё не обновлялась в этом запуске'
@@ -391,7 +401,7 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
     try {
       final res = await _subs.fetch(uri,
-          appVersion: appVersion,
+          appVersion: uaVersion,
           hwid: _hwid,
           osVersion: osVersion,
           deviceModel: deviceModel,
@@ -428,7 +438,7 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
     try {
       final res = await _subs.fetch(Uri.parse(sub.url),
-          appVersion: appVersion,
+          appVersion: uaVersion,
           hwid: _hwid,
           osVersion: osVersion,
           deviceModel: deviceModel,
