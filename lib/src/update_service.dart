@@ -146,18 +146,23 @@ class UpdateService {
     }
     if (Platform.isWindows) {
       try {
-        // Установщик стартует через 3 секунды, когда приложение уже закрылось
-        // и не держит свои файлы.
-        final exe = file.path.replaceAll("'", "''");
+        // Запускаем установщик напрямую (без PowerShell и пауз): он сам закроет
+        // приложение (/CLOSEAPPLICATIONS) и запустит его заново после установки.
+        // /DIR — ставим в ту папку, откуда запущено приложение. Так обновляется
+        // и обычная установка, и портативная копия (раньше портативная оставалась
+        // старой, а установщик создавал вторую копию в другом месте).
+        final appDir = File(Platform.resolvedExecutable).parent.path;
+        final log = '${Directory.systemTemp.path}\\relayfast-update.log';
         await Process.start(
-          'powershell',
+          file.path,
           [
-            '-NoProfile',
-            '-WindowStyle',
-            'Hidden',
-            '-Command',
-            "Start-Sleep -Seconds 3; Start-Process -FilePath '$exe' -ArgumentList "
-                "'/SILENT','/CLOSEAPPLICATIONS','/RESTARTAPPLICATIONS','/SUPPRESSMSGBOXES'"
+            '/SILENT',
+            '/CLOSEAPPLICATIONS',
+            '/RESTARTAPPLICATIONS',
+            '/SUPPRESSMSGBOXES',
+            '/NORESTART',
+            '/DIR=$appDir',
+            '/LOG=$log',
           ],
           mode: ProcessStartMode.detached,
         );
