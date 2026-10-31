@@ -94,11 +94,11 @@ jobs:
             --target "${{ github.sha }}" \
             --latest=false
 
-      - name: Clean up old releases (оставляем 5 последних)
+      - name: Clean up old releases (оставляем 2 последних)
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release list --limit 200 --json tagName -q '.[].tagName' \
-            | grep -E '^windows-[0-9]+$' | sort -t- -k2 -nr | tail -n +6 \
+            | grep -E '^windows-[0-9]+$' | sort -t- -k2 -nr | tail -n +3 \
             | xargs -r -n1 gh release delete --cleanup-tag -y || true
-
