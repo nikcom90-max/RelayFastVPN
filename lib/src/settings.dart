@@ -25,7 +25,7 @@ class AppSettings {
     theme = p.getString('s_theme') ?? 'dark';
     pingUrl = p.getString('s_ping_url') ?? defaultPingUrl;
     autoConnect = p.getBool('s_auto_connect') ?? false;
-    autoServer = p.getBool('s_auto_server') ?? false;
+    autoServer = false; // автовыбор сервера убран из интерфейса
     autoReconnect = p.getBool('s_auto_reconnect') ?? true;
     desktopMode = p.getString('s_desktop_mode') ?? 'proxy';
     splitMode = p.getString('s_split_mode') ?? 'off';

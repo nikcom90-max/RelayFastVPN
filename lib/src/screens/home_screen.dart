@@ -155,8 +155,7 @@ class HomeScreen extends StatelessWidget {
                     fontSize: 11, letterSpacing: 1, color: scheme.onSurfaceVariant)),
             const SizedBox(height: 8),
             _SubscriptionCard(controller: c, onRefresh: () => _manualRefresh(context)),
-            const SizedBox(height: 10),
-            _AutoTile(controller: c),
+            const SizedBox(height: 2),
             for (final s in c.servers) _ServerTile(controller: c, server: s),
           ],
         ),
@@ -619,46 +618,6 @@ class _ServerTile extends StatelessWidget {
                 child: ping,
               ),
             ),
-          ]),
-        ),
-      ),
-    );
-  }
-}
-
-
-class _AutoTile extends StatelessWidget {
-  const _AutoTile({required this.controller});
-  final AppController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = controller;
-    final scheme = Theme.of(context).colorScheme;
-    final on = c.settings.autoServer;
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () => c.updateSettings((s) => s.autoServer = !s.autoServer),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            color: on ? scheme.primary.withOpacity(.12) : scheme.surfaceContainer,
-            border: Border.all(
-                color: on ? scheme.primary : scheme.primary.withOpacity(.12),
-                width: on ? 1.5 : 1),
-          ),
-          child: Row(children: [
-            Icon(Icons.auto_awesome, color: scheme.primary, size: 22),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Text('Авто · самый быстрый сервер',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
-            ),
-            Icon(on ? Icons.check_circle : Icons.circle_outlined,
-                color: on ? scheme.primary : scheme.onSurfaceVariant, size: 20),
           ]),
         ),
       ),

@@ -55,15 +55,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const _Section('Подключение'),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Автовыбор сервера'),
-                subtitle: const Text(
-                    'При подключении проверяются все серверы, берётся самый '
-                    'быстрый. Если не вышло, пробуются следующие.'),
-                value: s.autoServer,
-                onChanged: (v) => c.updateSettings((x) => x.autoServer = v),
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
                 title: const Text('Поднимать VPN после сна'),
                 subtitle: const Text(
                     'Если система отключила VPN, пока экран был выключен, '
