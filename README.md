@@ -1,5 +1,5 @@
 # RelayFastVPN
-
+Link: https://t.me/RelayFastVPN_bot , lk.sakhalindv.ru
 Быстрый и простой VPN-клиент для Android и Windows. Работает по вашей подписке RelayFastVPN:
 добавили подписку один раз, нажали кнопку, и вы подключены.
 
