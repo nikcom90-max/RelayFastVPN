@@ -111,7 +111,8 @@ class UpdateService {
   /// (приложение после этого должно завершиться).
   /// Возвращает 'ok', 'permission' (Android: разрешить установку) или текст ошибки.
   static Future<String> downloadAndInstall(
-      UpdateInfo u, void Function(double) onProgress) async {
+      UpdateInfo u, void Function(double) onProgress,
+      {Future<void> Function()? beforeInstall}) async {
     final String dir = Platform.isWindows
         ? Directory.systemTemp.path
         : (await _ch.invokeMethod<String>('cacheDir')) ?? Directory.systemTemp.path;
@@ -151,6 +152,9 @@ class UpdateService {
         // /DIR — ставим в ту папку, откуда запущено приложение. Так обновляется
         // и обычная установка, и портативная копия (раньше портативная оставалась
         // старой, а установщик создавал вторую копию в другом месте).
+        // Сначала останавливаем VPN (вернуть системный прокси/TUN), потом ставим:
+        // установщик завершает приложение принудительно.
+        if (beforeInstall != null) await beforeInstall();
         final appDir = File(Platform.resolvedExecutable).parent.path;
         final log = '${Directory.systemTemp.path}\\relayfast-update.log';
         await Process.start(

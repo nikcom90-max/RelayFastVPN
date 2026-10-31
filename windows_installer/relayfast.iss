@@ -39,3 +39,15 @@ Name: "{autodesktop}\RelayFastVPN"; Filename: "{app}\RelayFastVPN.exe"; Tasks: d
 
 [Run]
 Filename: "{app}\RelayFastVPN.exe"; Description: "Запустить RelayFastVPN"; Flags: nowait postinstall
+
+[Code]
+// Приложение живёт в трее: на закрытие окна оно только прячется, поэтому
+// перед установкой завершаем его и ядро принудительно (иначе файлы заняты).
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  rc: Integer;
+begin
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM RelayFastVPN.exe', '', SW_HIDE, ewWaitUntilTerminated, rc);
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM rf-core.exe', '', SW_HIDE, ewWaitUntilTerminated, rc);
+  Result := '';
+end;

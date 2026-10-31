@@ -156,13 +156,15 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
     final r = await UpdateService.downloadAndInstall(u, (p) {
       updateProgress = p;
       notifyListeners();
-    });
-    updateProgress = null;
-    if (r == 'ok' && Platform.isWindows) {
-      // Установщик запущен: отключаем VPN и выходим, чтобы он заменил файлы.
+    }, beforeInstall: () async {
+      // Windows: перед запуском установщика отключаем VPN (он завершит приложение).
       try {
         await _engine.stop().timeout(const Duration(seconds: 6));
       } catch (_) {}
+    });
+    updateProgress = null;
+    if (r == 'ok' && Platform.isWindows) {
+      // Установщик запущен и сам закроет приложение; выходим, не дожидаясь.
       exit(0);
     }
     if (r == 'permission') {
