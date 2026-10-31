@@ -1,5 +1,5 @@
 # RelayFastVPN
-Link: https://t.me/RelayFastVPN_bot , lk.sakhalindv.ru
+
 Быстрый и простой VPN-клиент для Android и Windows. Работает по вашей подписке RelayFastVPN:
 добавили подписку один раз, нажали кнопку, и вы подключены.
 
@@ -15,16 +15,18 @@ Link: https://t.me/RelayFastVPN_bot , lk.sakhalindv.ru
 
 ## Скачать
 
-Последние версии: раздел **[Releases](../../releases)**.
-
-| Платформа | Какой файл |
+| Платформа | Скачать |
 |---|---|
-| Android (почти все телефоны) | `RelayFastVPN-arm64-v8a.apk` |
-| Android (старые телефоны) | `RelayFastVPN-armeabi-v7a.apk` |
-| Windows | `RelayFastVPN-Setup.exe` (установщик) |
-| Windows без установки | `RelayFastVPN-windows-portable.zip` |
+| **Android** (почти все телефоны) | [RelayFastVPN-arm64-v8a.apk](../../releases/download/latest-android/RelayFastVPN-arm64-v8a.apk) |
+| Android (очень старые телефоны) | [RelayFastVPN-armeabi-v7a.apk](../../releases/download/latest-android/RelayFastVPN-armeabi-v7a.apk) |
+| **Windows** (установщик) | [RelayFastVPN-Setup.exe](../../releases/download/latest-windows/RelayFastVPN-Setup.exe) |
+| Windows без установки | [RelayFastVPN-windows-portable.zip](../../releases/download/latest-windows/RelayFastVPN-windows-portable.zip) |
+
+Ссылки всегда ведут на последнюю версию. Другие релизы в списке (с пометкой «Служебная сборка») нужны только для
+автообновления внутри приложения, скачивать их вручную не нужно.
 
 > Не знаете, какой APK нужен? Берите `arm64-v8a`.
+> Android может спросить разрешение «Установка из неизвестных источников» — это нормально для APK вне магазина.
 
 ## Как начать
 
@@ -44,7 +46,7 @@ Link: https://t.me/RelayFastVPN_bot , lk.sakhalindv.ru
 ## Обновление
 
 Приложение само проверяет новые версии и предложит установить их: карточка на главном экране
-или «Настройки → Обновления». Чтобы новая версия ставилась поверх старой, скачивайте файлы только из Releases.
+или «Настройки → Обновления». Чтобы новая версия ставилась поверх старой, скачивайте файлы только по ссылкам выше (из этого репозитория).
 
 ## Если что-то не работает
 
